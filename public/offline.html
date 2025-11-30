@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - TribeTrip</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(135deg, #3D4A36 0%, #4A5240 50%, #5A6350 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 420px;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            border-radius: 1rem;
+        }
+
+        .icon {
+            font-size: 60px;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #F2EDE4;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #C9D4BE;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tip {
+            font-size: 0.875rem;
+            color: #A8B89E;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+        }
+
+        button {
+            background: #F2EDE4;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4A5240;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .brand {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: #7A8B6E;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="/images/logo1-icon-100.png" alt="TribeTrip" class="logo" onerror="this.style.display='none'">
+        <span class="icon" role="img" aria-label="Offline">📡</span>
+        <h1>You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Don't worry — TribeTrip will reconnect automatically when you're back online.</p>
+        
+        <div class="tip">
+            💡 <strong>Tip:</strong> Once connected, you can check out and check in resources, capture photos, and manage your reservations.
+        </div>
+        
+        <button onclick="location.reload()">
+            <span>🔄</span> Try Again
+        </button>
+        
+        <div class="brand">TribeTrip - Community Resource Sharing</div>
+    </div>
+</body>
+
+</html>

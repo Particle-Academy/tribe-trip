@@ -1,0 +1,213 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Enums\InvoiceStatus;
+use App\Models\Invoice;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Invoice>
+ */
+class InvoiceFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        $billingPeriodStart = fake()->dateTimeBetween('-3 months', '-1 month');
+        $billingPeriodEnd = (clone $billingPeriodStart)->modify('last day of this month');
+        $subtotal = fake()->randomFloat(2, 25, 500);
+
+        return [
+            'user_id' => User::factory(),
+            // Use unique random invoice number for parallel test safety
+            'invoice_number' => 'INV-'.now()->year.'-'.fake()->unique()->numerify('######'),
+            'billing_period_start' => $billingPeriodStart,
+            'billing_period_end' => $billingPeriodEnd,
+            'subtotal' => $subtotal,
+            'adjustments' => 0,
+            'adjustment_reason' => null,
+            'total' => $subtotal,
+            'status' => InvoiceStatus::Draft,
+            'due_date' => (clone $billingPeriodEnd)->modify('+30 days'),
+            'sent_at' => null,
+            'paid_at' => null,
+            'notes' => null,
+            'generated_by' => null,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status States
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Set as draft status.
+     */
+    public function draft(): static
+    {
+        return $this->state(fn () => [
+            'status' => InvoiceStatus::Draft,
+            'sent_at' => null,
+            'paid_at' => null,
+        ]);
+    }
+
+    /**
+     * Set as sent status.
+     */
+    public function sent(): static
+    {
+        return $this->state(fn () => [
+            'status' => InvoiceStatus::Sent,
+            'sent_at' => now(),
+            'paid_at' => null,
+        ]);
+    }
+
+    /**
+     * Set as paid status.
+     */
+    public function paid(): static
+    {
+        return $this->state(fn () => [
+            'status' => InvoiceStatus::Paid,
+            'sent_at' => now()->subDays(10),
+            'paid_at' => now(),
+        ]);
+    }
+
+    /**
+     * Set as overdue status.
+     */
+    public function overdue(): static
+    {
+        return $this->state(fn () => [
+            'status' => InvoiceStatus::Overdue,
+            'sent_at' => now()->subDays(45),
+            'due_date' => now()->subDays(15),
+            'paid_at' => null,
+        ]);
+    }
+
+    /**
+     * Set as voided status.
+     */
+    public function voided(): static
+    {
+        return $this->state(fn () => [
+            'status' => InvoiceStatus::Voided,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Adjustment States
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Apply a discount adjustment.
+     */
+    public function withDiscount(float $amount = 10.00): static
+    {
+        return $this->state(function (array $attributes) use ($amount) {
+            $subtotal = $attributes['subtotal'];
+
+            return [
+                'adjustments' => -$amount,
+                'adjustment_reason' => 'Discount applied',
+                'total' => $subtotal - $amount,
+            ];
+        });
+    }
+
+    /**
+     * Apply a credit adjustment.
+     */
+    public function withCredit(float $amount = 25.00): static
+    {
+        return $this->state(function (array $attributes) use ($amount) {
+            $subtotal = $attributes['subtotal'];
+
+            return [
+                'adjustments' => -$amount,
+                'adjustment_reason' => 'Credit from previous period',
+                'total' => $subtotal - $amount,
+            ];
+        });
+    }
+
+    /**
+     * Apply a late fee adjustment.
+     */
+    public function withLateFee(float $amount = 15.00): static
+    {
+        return $this->state(function (array $attributes) use ($amount) {
+            $subtotal = $attributes['subtotal'];
+
+            return [
+                'adjustments' => $amount,
+                'adjustment_reason' => 'Late payment fee',
+                'total' => $subtotal + $amount,
+            ];
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationship States
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Set for a specific user.
+     */
+    public function forUser(User $user): static
+    {
+        return $this->state(fn () => [
+            'user_id' => $user->id,
+        ]);
+    }
+
+    /**
+     * Set generated by a specific admin.
+     */
+    public function generatedBy(User $admin): static
+    {
+        return $this->state(fn () => [
+            'generated_by' => $admin->id,
+        ]);
+    }
+
+    /**
+     * Set for a specific billing period.
+     */
+    public function forPeriod($start, $end): static
+    {
+        return $this->state(fn () => [
+            'billing_period_start' => $start,
+            'billing_period_end' => $end,
+        ]);
+    }
+
+    /**
+     * Set for last month's billing period.
+     */
+    public function forLastMonth(): static
+    {
+        $lastMonth = now()->subMonth();
+
+        return $this->state(fn () => [
+            'billing_period_start' => $lastMonth->startOfMonth()->toDateString(),
+            'billing_period_end' => $lastMonth->endOfMonth()->toDateString(),
+        ]);
+    }
+}
